@@ -148,7 +148,7 @@ function OmniCC_OnUpdate()
 	if this.start < GetTime() then
 		local remain = this.duration - (GetTime() - this.start);
 
-		if remain >= 0 then
+		if remain >= 0 and this.icon:IsVisible()then
 			local time = GetFormattedTime( remain );
 			local scale, r, g, b = OmniCC_GetTimeStyle(remain);
 			this.text:SetFont(STANDARD_TEXT_FONT , OmniCC.size * scale, "OUTLINE");
@@ -170,7 +170,7 @@ function OmniCC_OnUpdate()
 		local cdEndTime = cdStartTime + this.duration
 		local remain = cdEndTime - time
 
-		if remain >= 0 then
+		if remain >= 0 and this.icon:IsVisible() then
 			local time = GetFormattedTime( remain );
 			local scale, r, g, b = OmniCC_GetTimeStyle(remain);
 			this.text:SetFont(STANDARD_TEXT_FONT , OmniCC.size * scale, "OUTLINE");
