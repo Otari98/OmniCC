@@ -12,12 +12,12 @@
 
 OmniCC = {
 	size = 18,
-	shine = 1
+	shine = 0
 }
 
 --constants!
 local DAY, HOUR, MINUTE = 86400, 3600, 60 --used for formatting text
-local DAYISH, HOURISH, MINUTEHALFISH, MINUTEISH, SOONISH = 3600 * 23.5, 60 * 59.5, 89.5, 59.5, 5.5 --used for formatting text at transition points
+local DAYISH, HOURISH, MINUTEHALFISH, MINUTEISH, SOONISH = 3600 * 23.5, 60 * 59.5, 89.5, 59.5, 5 --used for formatting text at transition points
 local HALFDAYISH, HALFHOURISH, HALFMINUTEISH = DAY/2 + 0.5, HOUR/2 + 0.5, MINUTE/2 + 0.5 --used for calculating next update times
 local SHINESCALE = 4;
 local MIN_DURATION = 3;
@@ -26,15 +26,15 @@ local YELLOW = "|c00FFFF00";
 --local bindings!
 local floor = math.floor
 local min = math.min
-local round = function(x) return floor(x + 0.5) end
+local round = function(x) return floor(x + 0.5 + 0.5) end
 local GetTime = GetTime
 
 --returns the formatted time, scaling to use, color, and the time until the next update is needed
 local function GetFormattedTime(s)
 
-	--format text as seconds when at 90 seconds or below
+	--format text as seconds when at 60 seconds or below
 	if s < MINUTEISH then
-		local seconds = round(s)
+		local seconds = floor(s+1)
 
 		--prevent 0 seconds from displaying
 		if seconds == 0 then
@@ -142,16 +142,18 @@ end
 --[[ Text Update ]]--
 
 function OmniCC_OnUpdate()
-	if this.timeToNextUpdate <= 0 or not this.icon:IsVisible() then
+	-- only run every 0.1 seconds
+	if ( this.tick or .1) > GetTime() then return else this.tick = GetTime() + .1 end
+
+	if this.start < GetTime() then
 		local remain = this.duration - (GetTime() - this.start);
 
-		if floor(remain + 0.5) > 0 and this.icon:IsVisible() then
-			local time, timeToNextUpdate = GetFormattedTime( remain );
+		if remain >= 0 then
+			local time = GetFormattedTime( remain );
 			local scale, r, g, b = OmniCC_GetTimeStyle(remain);
 			this.text:SetFont(STANDARD_TEXT_FONT , OmniCC.size * scale, "OUTLINE");
 			this.text:SetText( time );
 			this.text:SetTextColor(r, g, b);
-			this.timeToNextUpdate = timeToNextUpdate;
 		else
 			if OmniCC.shine and this.icon:IsVisible() then
 				StartToShine(this);
@@ -159,7 +161,27 @@ function OmniCC_OnUpdate()
 			this:Hide();
 		end
 	else
-		this.timeToNextUpdate = this.timeToNextUpdate - arg1;
+		--fix for this bug https://github.com/Stanzilla/WoWUIBugs/issues/47
+		--adapted from pfUI
+		local time = time()
+		local startupTime = time - GetTime()
+		local cdTime = (2 ^ 32) / 1000 - this.start
+		local cdStartTime = startupTime - cdTime
+		local cdEndTime = cdStartTime + this.duration
+		local remain = cdEndTime - time
+
+		if remain >= 0 then
+			local time = GetFormattedTime( remain );
+			local scale, r, g, b = OmniCC_GetTimeStyle(remain);
+			this.text:SetFont(STANDARD_TEXT_FONT , OmniCC.size * scale, "OUTLINE");
+			this.text:SetText( time );
+			this.text:SetTextColor(r, g, b);
+		else
+			if OmniCC.shine and this.icon:IsVisible() then
+				StartToShine(this);
+			end
+			this:Hide();
+		end
 	end
 end
 
