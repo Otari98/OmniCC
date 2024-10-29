@@ -162,7 +162,7 @@ function OmniCC_OnUpdate()
 		end
 	else
 		--fix for this bug https://github.com/Stanzilla/WoWUIBugs/issues/47
-		--adapted from pfUI
+		--adapted from pfUI by Shagu
 		local time = time()
 		local startupTime = time - GetTime()
 		local cdTime = (2 ^ 32) / 1000 - this.start
