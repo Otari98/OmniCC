@@ -68,6 +68,7 @@ local function CreateCooldownCount(cooldown, start, duration)
 		This makes it a bit more dependent on other mods as far as their icon format goes.
 		Its the only way I can think of to absolutely make sure that the text cooldown is hidden properly.
 	--]]
+    if strfind(cooldown:GetName(), "^TargetFrame") then return end
 	local icon = 
 		--standard action button icon, $parentIcon
 		getglobal(cooldown:GetParent():GetName() .. "Icon") or 
@@ -143,7 +144,7 @@ end
 
 function OmniCC_OnUpdate()
 	-- only run every 0.1 seconds
-	if ( this.tick or .1) > GetTime() then return else this.tick = GetTime() + .1 end
+	if (this.tick or .1) > GetTime() then return else this.tick = GetTime() + .1 end
 
 	if this.start < GetTime() then
 		local remain = this.duration - (GetTime() - this.start);
@@ -161,8 +162,8 @@ function OmniCC_OnUpdate()
 			this:Hide();
 		end
 	else
-		--fix for this bug https://github.com/Stanzilla/WoWUIBugs/issues/47
-		--adapted from pfUI by Shagu
+		-- fix for this bug https://github.com/Stanzilla/WoWUIBugs/issues/47
+		-- adapted from pfUI by Shagu
 		local time = time()
 		local startupTime = time - GetTime()
 		local cdTime = (2 ^ 32) / 1000 - this.start
@@ -230,12 +231,11 @@ SlashCmdList["OmniCCCOMMAND"] = function(msg)
 	else
 		local args = {};
 		
-		local word;
 		for word in string.gfind(msg, "[^%s]+") do
 			table.insert(args, word );
 		end
 
-		cmd = string.lower(args[1]);
+		local cmd = string.lower(args[1]);
 		
 		--/omnicc size <size>
 		if(cmd == "size") then
