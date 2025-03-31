@@ -68,7 +68,7 @@ local function CreateCooldownCount(cooldown, start, duration)
 		This makes it a bit more dependent on other mods as far as their icon format goes.
 		Its the only way I can think of to absolutely make sure that the text cooldown is hidden properly.
 	--]]
-    if strfind(cooldown:GetName(), "^TargetFrame") then return end
+    if strfind(cooldown:GetName() or "", "^TargetFrame") then return end
 	local icon = 
 		--standard action button icon, $parentIcon
 		getglobal(cooldown:GetParent():GetName() .. "Icon") or 
