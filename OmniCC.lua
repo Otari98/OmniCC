@@ -16,6 +16,7 @@ OmniCC = {
 }
 
 --constants!
+local _G = getfenv(0)
 local DAY, HOUR, MINUTE = 86400, 3600, 60 --used for formatting text
 local DAYISH, HOURISH, MINUTEHALFISH, MINUTEISH, SOONISH = 3600 * 23.5, 60 * 59.5, 89.5, 59.5, 5 --used for formatting text at transition points
 local HALFDAYISH, HALFHOURISH, HALFMINUTEISH = DAY/2 + 0.5, HOUR/2 + 0.5, MINUTE/2 + 0.5 --used for calculating next update times
@@ -68,34 +69,38 @@ local function CreateCooldownCount(cooldown, start, duration)
 		This makes it a bit more dependent on other mods as far as their icon format goes.
 		Its the only way I can think of to absolutely make sure that the text cooldown is hidden properly.
 	--]]
+	if not cooldown then return end
+	if not cooldown:GetParent() then return end
+	if not cooldown:GetParent():GetName() then return end
     if strfind(cooldown:GetName() or "", "^TargetFrame") then return end
+	
 	local icon = 
 		--standard action button icon, $parentIcon
-		getglobal(cooldown:GetParent():GetName() .. "Icon") or 
+		_G[cooldown:GetParent():GetName() .. "Icon"] or 
 		--standard item button icon,  $parentIconTexture
-		getglobal(cooldown:GetParent():GetName() .. "IconTexture") or 
+		_G[cooldown:GetParent():GetName() .. "IconTexture"] or 
 		--discord action button, $parent_Icon
-		getglobal(cooldown:GetParent():GetName() .. "_Icon");
+		_G[cooldown:GetParent():GetName() .. "_Icon"];
 	
-	if icon then
-		local textFrame = CreateFrame("Frame", nil, cooldown:GetParent());
-		textFrame:SetAllPoints(cooldown:GetParent());
-		textFrame:SetFrameLevel(textFrame:GetFrameLevel() + 5);
-		cooldown.textFrame = textFrame;
-		
-		textFrame.text = textFrame:CreateFontString(nil, "OVERLAY");
-		textFrame.text:SetPoint("CENTER", 0, 0);
-		textFrame.text:SetJustifyH("CENTER");
-		
-		textFrame.icon = icon;
-		
-		textFrame:SetAlpha(cooldown:GetParent():GetAlpha());
-		textFrame:Hide();
-		
-		textFrame:SetScript("OnUpdate", OmniCC_OnUpdate);
-		
-		return textFrame;
-	end
+	if not icon then return end
+
+	local textFrame = CreateFrame("Frame", nil, cooldown:GetParent());
+	textFrame:SetAllPoints(cooldown:GetParent());
+	textFrame:SetFrameLevel(textFrame:GetFrameLevel() + 5);
+	cooldown.textFrame = textFrame;
+	
+	textFrame.text = textFrame:CreateFontString(nil, "OVERLAY");
+	textFrame.text:SetPoint("CENTER", 0, 0);
+	textFrame.text:SetJustifyH("CENTER");
+	
+	textFrame.icon = icon;
+	
+	textFrame:SetAlpha(cooldown:GetParent():GetAlpha());
+	textFrame:Hide();
+	
+	textFrame:SetScript("OnUpdate", OmniCC_OnUpdate);
+	
+	return textFrame;
 end
 
 --[[  Shine Code  - adapted from ABInfo ]]--
